@@ -937,7 +937,7 @@
     <div class="video-track" id="videoTrack">
       <!-- Video 1 -->
       <div class="video-slide">
-        <video controls>
+        <video autoplay muted loop playsinline>
           <source src="vid 1.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -949,7 +949,7 @@
 
       <!-- Video 2 -->
       <div class="video-slide">
-        <video controls>
+        <video muted loop playsinline>
           <source src="vid 2.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -961,7 +961,7 @@
 
       <!-- Video 3 -->
       <div class="video-slide">
-        <video controls>
+        <video muted loop playsinline>
           <source src="vid 3.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -1263,6 +1263,7 @@ function goToVideo(index) {
 function updateCarousel() {
   const track = document.getElementById('videoTrack');
   const dots = document.querySelectorAll('.carousel-dot');
+  const videos = document.querySelectorAll('.video-slide video');
   
   // Move the carousel
   track.style.transform = `translateX(-${currentVideo * 100}%)`;
@@ -1276,25 +1277,39 @@ function updateCarousel() {
     }
   });
   
-  // Pause all videos except current
-  const videos = document.querySelectorAll('.video-slide video');
+  // Pause all videos and play only the current one
   videos.forEach((video, index) => {
-    if (index !== currentVideo) {
+    if (index === currentVideo) {
+      video.currentTime = 0; // Reset to beginning
+      video.play().catch(e => console.log('Video autoplay blocked:', e));
+    } else {
       video.pause();
+      video.currentTime = 0; // Reset to beginning
     }
   });
 }
 
-// Auto-advance carousel every 10 seconds (optional)
-setInterval(() => {
+// Initialize first video on page load
+window.addEventListener('load', function() {
+  setTimeout(() => {
+    const firstVideo = document.querySelector('.video-slide video');
+    if (firstVideo) {
+      firstVideo.play().catch(e => console.log('First video autoplay blocked:', e));
+    }
+  }, 500);
+});
+
+// Auto-advance carousel when video ends
+document.addEventListener('DOMContentLoaded', function() {
   const videos = document.querySelectorAll('.video-slide video');
-  const currentVideoElement = videos[currentVideo];
-  
-  // Only auto-advance if video is not playing
-  if (currentVideoElement.paused) {
-    changeVideo(1);
-  }
-}, 10000);
+  videos.forEach((video, index) => {
+    video.addEventListener('ended', () => {
+      if (index === currentVideo) {
+        changeVideo(1);
+      }
+    });
+  });
+});
 
 
 
